@@ -1,7 +1,7 @@
 package pt.ulusofona.aed.deisiworldmeter;
 
-public enum Entidades {
+public enum TipoEntidade {
     PAISES,
     CIDADE,
-    POPULACAO
+    INPUT_INVALIDO
 }
