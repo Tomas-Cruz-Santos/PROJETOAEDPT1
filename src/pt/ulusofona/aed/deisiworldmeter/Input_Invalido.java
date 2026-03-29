@@ -6,7 +6,6 @@ public class Input_Invalido {
     int linhasIncorretas;
     int primeiraLinhaIncorreta;
 
-
     public Input_Invalido(String file) {
         this.nomeFicheiro = file;
         this.linhasCorretas = 0;
