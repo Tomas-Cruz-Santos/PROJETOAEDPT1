@@ -1,5 +1,6 @@
 package pt.ulusofona.aed.deisiworldmeter;
 
+
 public class Pais {
     int id;
     String alfa2;
