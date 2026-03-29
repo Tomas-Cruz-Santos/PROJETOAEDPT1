@@ -1,13 +1,12 @@
 package pt.ulusofona.aed.deisiworldmeter;
 
-public class InputInvalido {
+public class Input_Invalido {
     String nomeFicheiro;
     int linhasCorretas;
     int linhasIncorretas;
     int primeiraLinhaIncorreta;
 
-
-    public InputInvalido(String file) {
+    public Input_Invalido(String file) {
         this.nomeFicheiro = file;
         this.linhasCorretas = 0;
         this.linhasIncorretas = 0;
