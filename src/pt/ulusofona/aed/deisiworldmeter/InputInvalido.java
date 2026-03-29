@@ -11,7 +11,7 @@ public class InputInvalido {
         this.nomeFicheiro = file;
         this.linhasCorretas = 0;
         this.linhasIncorretas = 0;
-        this.primeiraLinhaIncorreta = -1;
+        this.primeiraLinhaIncorreta = -1; // quando não ha linhas nao ok (linhas ignoradas)
     }
 
     public void contalinhascorretas() {
@@ -27,7 +27,8 @@ public class InputInvalido {
 
     @Override
     public String toString() {
-        return nomeFicheiro + " | " + linhasCorretas + " | " + linhasIncorretas + " | " + (primeiraLinhaIncorreta != -1 ? primeiraLinhaIncorreta : "-1");
+        return nomeFicheiro + " | " + linhasCorretas + " | " + linhasIncorretas + " | "
+                + (primeiraLinhaIncorreta != -1 ? primeiraLinhaIncorreta : "-1");
     }
 }
 

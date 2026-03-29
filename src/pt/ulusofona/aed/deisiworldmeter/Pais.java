@@ -6,6 +6,11 @@ public class Pais {
     String alfa2;
     String alfa3;
     String nome;
+    int numeroIndicadores;
+
+    public void adicionarIndicador() {
+        numeroIndicadores++;
+    }
 
     public Pais(int id, String alfa2, String alfa3, String nome) {
         this.id = id;
@@ -17,8 +22,10 @@ public class Pais {
 
     @Override
     public String toString() {
-        return "Pais{" +
-                "id=" + id + "| alfa2='" + alfa2  + "| alfa3=" + alfa3  + "| nome=" + nome +
-                '}';
+        if (id>700){
+            return nome + " | " + id + " | " + alfa2 + " | " + alfa3+ " | " + numeroIndicadores;
+        }else{
+            return nome + " | " + id + " | " + alfa2 + " | " + alfa3;
+        }
     }
 }
