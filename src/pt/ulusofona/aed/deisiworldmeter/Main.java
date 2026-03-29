@@ -5,9 +5,13 @@ import java.util.ArrayList;
 
 public class Main {
 
-        public static ArrayList getObjects(TipoEntidade tipo)
+        public static ArrayList getObjects(TipoEntidade tipo) {
+            return null;
+        }
 
-        public static boolean parseFiles(File Folder)
+        public static boolean parseFiles(File Folder) {
+            return  true;
+        }
 
     public static void main(String[] args) {
         System.out.println("Bem-vindo ao DEISI World Meter");
