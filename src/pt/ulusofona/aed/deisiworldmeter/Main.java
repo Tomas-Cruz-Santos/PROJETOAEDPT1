@@ -7,12 +7,17 @@ import java.util.Scanner;
 
 public class Main {
     static ArrayList<Pais> paises = new ArrayList<>();
+    static ArrayList<Cidade> cidades = new ArrayList<>();
     static ArrayList<InputInvalido> inputInvalidos = new ArrayList<>();
+
     public static ArrayList getObjects(TipoEntidade tipo) {
-        if (tipo == TipoEntidade.PAIS){
+        if (tipo == TipoEntidade.PAIS) {
             return paises;
         }
-        if (tipo == TipoEntidade.INPUT_INVALIDO){
+        if (tipo == TipoEntidade.CIDADE) {
+            return cidades;
+        }
+        if (tipo == TipoEntidade.INPUT_INVALIDO) {
             return inputInvalidos;
         }
         return null;
@@ -21,8 +26,8 @@ public class Main {
 
     public static boolean parseFiles(File folder) {
         paises = new ArrayList<>();// evita duplicados
+        cidades = new ArrayList<>();
         inputInvalidos = new ArrayList<>();
-
 
         InputInvalido infoPaises = new InputInvalido("paises.csv");
 
@@ -31,11 +36,11 @@ public class Main {
         try {
             Scanner scanner = new Scanner(ficheiroPaises);
             boolean primeiraLinha = true;
-            int numeroLinha= 0;
+            int numeroLinha = 0;
 
             while (scanner.hasNextLine()) { // se tiver a proxima linha retorna true (hasNextLine)
                 String linha = scanner.nextLine();
-                numeroLinha ++;
+                numeroLinha++;
 
                 if (primeiraLinha) { // ignorar cabeçalho
                     primeiraLinha = false;
@@ -59,14 +64,66 @@ public class Main {
             }
             scanner.close();
             inputInvalidos.add(infoPaises);
-            return true;
 
         } catch (FileNotFoundException e) {
             // erro : ficheiro não existe
             return false;
         }
 
+        // Leitura do ficheiro CIDADES
+        InputInvalido infoCidades = new InputInvalido("cidades.csv");
+
+        File ficheiroCidades = new File(folder, "cidades.csv");
+        try {
+            Scanner scanner = new Scanner(ficheiroCidades);
+            boolean primeiraLinha = true;
+            int numeroLinha = 0;
+
+            while (scanner.hasNextLine()) {
+                String linha = scanner.nextLine();
+                numeroLinha++;
+
+                if (primeiraLinha) {
+                    primeiraLinha = false;
+                    continue;
+                }
+
+                try {
+                    String[] partes = linha.split(",");
+
+                    if (partes.length != 6) {
+                        infoCidades.contalinhasIncorretas(numeroLinha);
+                        continue;
+                    }
+
+                    String alfa2 = partes[0];
+                    String cidade = partes[1];
+                    int regiao = Integer.parseInt(partes[2]);
+                    double populacao = Double.parseDouble(partes[3]);
+                    double latitude = Double.parseDouble(partes[4]);
+                    double longitude = Double.parseDouble(partes[5]);
+
+                    Cidade c = new Cidade(alfa2, cidade, regiao, populacao, latitude, longitude);
+
+                    cidades.add(c); // guarda cidade dentro da lista
+
+                    infoCidades.contalinhascorretas();
+
+                } catch (Exception e) { // nao existe
+                    infoCidades.contalinhasIncorretas(numeroLinha);
+                }
+            }
+
+            scanner.close();
+            inputInvalidos.add(infoCidades);
+
+        } catch (FileNotFoundException e) {
+            return false;
+        }
+
+        return true;
     }
+
 
     public static void main(String[] args)  {
         System.out.println("Bem-vindo ao DEISI World Meter");
@@ -90,6 +147,14 @@ public class Main {
         System.out.println("Total paises: " + paisesLidos.size());
         System.out.println();
 
+        System.out.println("TESTAR CIDADES");
+        System.out.println(cidades);
+        ArrayList cidadesLidas = getObjects(TipoEntidade.CIDADE);
+        System.out.println("Teste 2: Quantidade de cidades no ficheiro");
+        System.out.println("Total cidades: " + cidadesLidas.size());
+        System.out.println();
+
+
         System.out.println("Teste 2: Ver primeiros 3 paises");
         for (int i = 0; i < 3 && i < paisesLidos.size(); i++) { // vê os primeiros 3
             System.out.println(paisesLidos.get(i));
@@ -112,3 +177,4 @@ public class Main {
 
     }
 }
+

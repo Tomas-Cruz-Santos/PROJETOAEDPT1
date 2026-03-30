@@ -4,9 +4,9 @@ public class Cidade {
     String alfa2;   // LIGA SE AOS PAISES
     String cidade;
     int regiao;
-    Double populacao;
-    Double latitude;
-    Double longitude;
+    double populacao;
+    double latitude;
+    double longitude;
 
     public Cidade(String alfa2, String cidade, int regiao, Double populacao, Double latitude, Double longitude) {
         this.alfa2 = alfa2.toUpperCase();
@@ -19,8 +19,7 @@ public class Cidade {
 
     @Override
     public String toString() {
-        return "Cidade{" +
-                "alfa2=" + alfa2 + "| cidade=" + cidade  + "| regiao=" + regiao + "| populacao=" + populacao + "| latitude=" + latitude + "| longitude=" + longitude +
-                '}';
+        return cidade + " | " + alfa2 + " | " + regiao + " | " +
+                (int) populacao + " | (" + latitude + "," + longitude + ")";
     }
 }
