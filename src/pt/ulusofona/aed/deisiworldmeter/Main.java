@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class Main {
     static ArrayList<Pais> paises = new ArrayList<>();
     static ArrayList<Cidade> cidades = new ArrayList<>();
-    static ArrayList<InputInvalido> inputInvalidos = new ArrayList<>();
+    static ArrayList<InputInvalido> inputInvalido = new ArrayList<>();
 
     public static ArrayList getObjects(TipoEntidade tipo) {
         if (tipo == TipoEntidade.PAIS) {
@@ -18,111 +18,161 @@ public class Main {
             return cidades;
         }
         if (tipo == TipoEntidade.INPUT_INVALIDO) {
-            return inputInvalidos;
+            return inputInvalido;
         }
         return null;
     }
 
-
     public static boolean parseFiles(File folder) {
         paises = new ArrayList<>();// evita duplicados
         cidades = new ArrayList<>();
-        inputInvalidos = new ArrayList<>();
+        inputInvalido = new ArrayList<>();
 
-        InputInvalido infoPaises = new InputInvalido("paises.csv");
+        String[] Ficheiros = {"paises.csv", "cidades.csv"};   // leitura de ficheiros
 
-        // Leitura do ficheiro paises
-        File ficheiroPaises = new File(folder, "paises.csv");
-        try {
-            Scanner scanner = new Scanner(ficheiroPaises);
-            boolean primeiraLinha = true;
-            int numeroLinha = 0;
+        for (String nome : Ficheiros) {
+            File ficheiro = new File(folder, nome);
 
-            while (scanner.hasNextLine()) { // se tiver a proxima linha retorna true (hasNextLine)
-                String linha = scanner.nextLine();
-                numeroLinha++;
-
-                if (primeiraLinha) { // ignorar cabeçalho
-                    primeiraLinha = false;
-                    continue;
-                }
-                String[] partes = linha.split(",");
-
-                if (partes.length != 4) {
-                    infoPaises.contalinhasIncorretas(numeroLinha);
-                    continue;
-                }
-
-                int id = Integer.parseInt(partes[0]);
-                String alfa2 = partes[1];
-                String alfa3 = partes[2];
-                String nome = partes[3];
-
-                Pais pais = new Pais(id, alfa2, alfa3, nome);
-                paises.add(pais);
-                infoPaises.contalinhascorretas();
+            if (!ficheiro.exists() || ficheiro.isDirectory()) {
+                System.out.println("Erro: O ficheiro " + nome + " não existe ou não é um ficheiro válido.");
+                return false;
             }
-            scanner.close();
-            inputInvalidos.add(infoPaises);
+        }
+        lerPaises(new File(folder, "paises.csv"));
+        lerCidades(new File(folder, "cidades.csv"));
 
+        return true;
+    }
+
+
+    static boolean lerPaises(File ficheiroPaises) {
+        Scanner scanner = null;
+        InputInvalido inputInvalidoPaises = new InputInvalido(ficheiroPaises.getName());
+        boolean primeiraLinha = true; // Ignora a primeira linha (cabeçalho)
+        int numeroDaLinha = 0; // Contador para o número da linha
+
+        try {
+            scanner = new Scanner(ficheiroPaises);
         } catch (FileNotFoundException e) {
-            // erro : ficheiro não existe
             return false;
         }
 
-        // Leitura do ficheiro CIDADES
-        InputInvalido infoCidades = new InputInvalido("cidades.csv");
+        while (scanner.hasNext()) {
+            String linha = scanner.nextLine();
+            numeroDaLinha++;
 
-        File ficheiroCidades = new File(folder, "cidades.csv");
-        try {
-            Scanner scanner = new Scanner(ficheiroCidades);
-            boolean primeiraLinha = true;
-            int numeroLinha = 0;
+            if (primeiraLinha) {
+                primeiraLinha = false;
+                continue;
+            }
 
-            while (scanner.hasNextLine()) {
-                String linha = scanner.nextLine();
-                numeroLinha++;
-
-                if (primeiraLinha) {
-                    primeiraLinha = false;
-                    continue;
-                }
-
+            String[] partes = linha.split(",");
+            if (partes.length == 4) {
                 try {
-                    String[] partes = linha.split(",");
+                    int id = Integer.parseInt(partes[0]);
+                    String alfa2 = partes[1];
+                    String alfa3 = partes[2];
+                    String nome = partes[3];
 
-                    if (partes.length != 6) {
-                        infoCidades.contalinhasIncorretas(numeroLinha);
-                        continue;
+                    // Verifica se o ID já existe na lista de países (paises repetidos)
+                    boolean idIgual = false;
+                    for (Pais paisExistente : paises) {
+                        if (paisExistente.id == id) {
+                            idIgual = true;
+                            break;
+                        }
                     }
 
+                    if (!idIgual) {
+                        if (id > 0 && alfa2.length() == 2 && alfa3.length() == 3 && !nome.isEmpty()) {
+                            Pais pais = new Pais(id, alfa2, alfa3, nome);
+                            paises.add(pais);
+                            inputInvalidoPaises.contalinhascorretas();
+                        } else {
+                            inputInvalidoPaises.contalinhasIncorretas(numeroDaLinha);
+                        }
+                    } else {
+                        inputInvalidoPaises.contalinhasIncorretas(numeroDaLinha);
+                    }
+
+                } catch (NumberFormatException e) {
+                    inputInvalidoPaises.contalinhasIncorretas(numeroDaLinha);
+                }
+            } else {
+                inputInvalidoPaises.contalinhasIncorretas(numeroDaLinha);
+            }
+        }
+        scanner.close();
+        inputInvalido.add(inputInvalidoPaises);
+        return true;
+    }
+
+    static boolean lerCidades(File ficheiroCidades) {
+        Scanner scanner = null;
+        InputInvalido inputInvalidoCidades = new InputInvalido(ficheiroCidades.getName());
+        boolean primeiraLinha = true; // Ignora a primeira linha (cabeçalho)
+        int numeroDaLinha = 0; // Contador para o número da linha
+
+        try {
+            scanner = new Scanner(ficheiroCidades);
+        } catch (FileNotFoundException e) {
+            return false;
+        }
+
+        while (scanner.hasNext()) {
+            String linha = scanner.nextLine();
+            numeroDaLinha++;
+
+            if (primeiraLinha) {
+                primeiraLinha = false;
+                continue;
+            }
+
+            String[] partes = linha.split(",");   // le os compeonentes apesar das ',' nos ficheiros
+            if (partes.length == 6) {
+                try {
                     String alfa2 = partes[0];
-                    String cidade = partes[1];
+                    String nomeCidade = partes[1];
                     int regiao = Integer.parseInt(partes[2]);
                     double populacao = Double.parseDouble(partes[3]);
                     double latitude = Double.parseDouble(partes[4]);
                     double longitude = Double.parseDouble(partes[5]);
 
-                    Cidade c = new Cidade(alfa2, cidade, regiao, populacao, latitude, longitude);
+                    if (alfa2.length() == 2 && !(regiao > 0) && populacao > 0) {  // regiao é um int portanto confirmar (REVER ISTO)
 
-                    cidades.add(c); // guarda cidade dentro da lista
+                        boolean paisEncontrado = false;
+                        for (Pais pais : paises) {
+                            if (pais.alfa2.equalsIgnoreCase(alfa2)) {
+                                paisEncontrado = true;
+                                break;
+                            }
+                        }
 
-                    infoCidades.contalinhascorretas();
+                        if (paisEncontrado) {
+                            Cidade cidadeEnc = new Cidade(alfa2, nomeCidade, regiao, populacao, latitude, longitude);
+                            cidades.add(cidadeEnc);
+                            inputInvalidoCidades.contalinhascorretas();
 
-                } catch (Exception e) { // nao existe
-                    infoCidades.contalinhasIncorretas(numeroLinha);
+                        } else {
+                            inputInvalidoCidades.contalinhasIncorretas(numeroDaLinha);
+                        }
+                    } else {
+                        inputInvalidoCidades.contalinhasIncorretas(numeroDaLinha);
+                    }
+                } catch (NumberFormatException e) {
+                    inputInvalidoCidades.contalinhasIncorretas(numeroDaLinha);
                 }
+            } else {
+                inputInvalidoCidades.contalinhasIncorretas(numeroDaLinha);
             }
-
-            scanner.close();
-            inputInvalidos.add(infoCidades);
-
-        } catch (FileNotFoundException e) {
-            return false;
         }
-
+        scanner.close();
+        inputInvalido.add(inputInvalidoCidades);
         return true;
-    }
+    }  // algo aqui esta errado pq submeti e nao deu o 2/9
+
+
+    // FAZER AS VALIDAÇOES: ID etc...
 
 
     public static void main(String[] args)  {
@@ -165,7 +215,7 @@ public class Main {
         for (int i = paisesLidos.size() - 2; i<paisesLidos.size(); i++) { // vê os primeiros 3
             System.out.println(paisesLidos.get(i));
         }
-        //TESTE 4 : Teste de erro":
+        //TESTE 4: Teste de erro:
             // Cria uma linha inválida no CSV:
             // é suposto o programa nao falhar, e a linha ser ignorada ex: 123,PT
 
