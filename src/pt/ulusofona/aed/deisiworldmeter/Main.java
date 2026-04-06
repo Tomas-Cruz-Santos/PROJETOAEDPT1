@@ -134,12 +134,12 @@ public class Main {
                 try {
                     String alfa2 = partes[0];
                     String nomeCidade = partes[1];
-                    int regiao = Integer.parseInt(partes[2]);
+                    String regiao = (partes[2]);
                     double populacao = Double.parseDouble(partes[3]);
                     double latitude = Double.parseDouble(partes[4]);
                     double longitude = Double.parseDouble(partes[5]);
 
-                    if (alfa2.length() == 2 && regiao > 0 && populacao > 0) {
+                    if (alfa2.length() == 2 && !regiao.isEmpty() && populacao > 0) {
                         boolean paisEncontrado = false;
 
                         for (Pais pais : paises) {

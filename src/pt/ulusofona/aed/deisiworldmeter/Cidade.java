@@ -3,12 +3,12 @@ package pt.ulusofona.aed.deisiworldmeter;
 public class Cidade {
     String alfa2;   // LIGA SE AOS PAISES
     String cidade;
-    int regiao;
+    String regiao;
     double populacao;
     double latitude;
     double longitude;
 
-    public Cidade(String alfa2, String cidade, int regiao, Double populacao, Double latitude, Double longitude) {
+    public Cidade(String alfa2, String cidade, String regiao, Double populacao, Double latitude, Double longitude) {
         this.alfa2 = alfa2.toUpperCase();
         this.cidade = cidade;
         this.regiao = regiao;
