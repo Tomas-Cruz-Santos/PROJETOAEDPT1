@@ -17,6 +17,7 @@ public class Pais {
         this.alfa2 = alfa2.toUpperCase();    //  LIGA SE AS CIDADES
         this.alfa3 = alfa3.toUpperCase();
         this.nome = nome;
+        this.numeroIndicadores = 0;
 
     }
 

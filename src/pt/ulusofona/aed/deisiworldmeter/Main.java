@@ -28,7 +28,7 @@ public class Main {
         cidades = new ArrayList<>();
         inputInvalido = new ArrayList<>();
 
-        String[] Ficheiros = {"paises.csv", "cidades.csv"};   // leitura de ficheiros
+        String[] Ficheiros = {"paises.csv", "cidades.csv", "populacao.csv"};   // leitura de ficheiros
 
         for (String nome : Ficheiros) {
             File ficheiro = new File(folder, nome);
@@ -40,6 +40,7 @@ public class Main {
         }
         lerPaises(new File(folder, "paises.csv"));
         lerCidades(new File(folder, "cidades.csv"));
+        lerPopulacao(new File(folder, "populacao.csv"));
 
         return true;
     }
@@ -56,7 +57,7 @@ public class Main {
             return false;
         }
 
-        while (scanner.hasNext()) {
+        while (scanner.hasNextLine()) {
             String linha = scanner.nextLine();
             numeroDaLinha++;
 
@@ -170,10 +171,68 @@ public class Main {
         inputInvalido.add(inputInvalidoCidades);
         return true;
     }
+    static boolean lerPopulacao(File ficheiroPopulacao) {
+        Scanner scanner = null;
+        InputInvalido inputInvalidoPopulacao = new InputInvalido(ficheiroPopulacao.getName());
+        boolean primeiraLinha = true;
+        int numeroDaLinha = 0;
 
+        try {
+            scanner = new Scanner(ficheiroPopulacao);
+        } catch (FileNotFoundException e) {
+            return false;
+        }
 
-    // FAZER AS VALIDAÇOES: ID etc...
+        while (scanner.hasNextLine()) {
+            String linha = scanner.nextLine();
+            numeroDaLinha++;
 
+            if (primeiraLinha) {
+                primeiraLinha = false;
+                continue;
+            }
+
+            String[] partes = linha.split(",");
+
+            if (partes.length == 5) {
+                try {
+                    int idPais = Integer.parseInt(partes[0]);
+
+                    // valida os outros campos sem guardar
+                    Integer.parseInt(partes[1]);
+                    Double.parseDouble(partes[2]);
+                    Double.parseDouble(partes[3]);
+                    Double.parseDouble(partes[4]);
+
+                    Pais paisEncontrado = null;
+
+                    for (Pais pais : paises) {
+                        if (pais.id == idPais) {
+                            paisEncontrado = pais;
+                            break;
+                        }
+                    }
+
+                    if (paisEncontrado != null) {
+                        inputInvalidoPopulacao.contalinhascorretas();
+
+                        if (paisEncontrado.id > 700) {
+                            paisEncontrado.adicionarIndicador();
+                        }
+                    } else {
+                        inputInvalidoPopulacao.contalinhasIncorretas(numeroDaLinha);
+                    }
+
+                } catch (NumberFormatException e) {
+                    inputInvalidoPopulacao.contalinhasIncorretas(numeroDaLinha);
+                }
+            }
+        }
+
+        scanner.close();
+        inputInvalido.add(inputInvalidoPopulacao);
+        return true;
+    }
 
     public static void main(String[] args) {
         System.out.println("Bem-vindo ao DEISI World Meter");
