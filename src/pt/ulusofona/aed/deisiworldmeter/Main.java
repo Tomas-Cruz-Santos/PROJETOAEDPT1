@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
+// 9/9
 public class Main {
     static ArrayList<Pais> paises = new ArrayList<>();
     static ArrayList<Cidade> cidades = new ArrayList<>();
