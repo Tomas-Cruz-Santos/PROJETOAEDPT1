@@ -8,7 +8,7 @@ public class Cidade {
     double latitude;
     double longitude;
 
-    public Cidade(String alfa2, String cidade, String regiao, Double populacao, Double latitude, Double longitude) {
+    public Cidade(String alfa2, String cidade, String regiao, double populacao, double latitude, double longitude) {
         this.alfa2 = alfa2.toUpperCase();
         this.cidade = cidade;
         this.regiao = regiao;
