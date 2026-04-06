@@ -44,7 +44,6 @@ public class Main {
         return true;
     }
 
-
     static boolean lerPaises(File ficheiroPaises) {
         Scanner scanner = null;
         InputInvalido inputInvalidoPaises = new InputInvalido(ficheiroPaises.getName());
@@ -110,8 +109,8 @@ public class Main {
     static boolean lerCidades(File ficheiroCidades) {
         Scanner scanner = null;
         InputInvalido inputInvalidoCidades = new InputInvalido(ficheiroCidades.getName());
-        boolean primeiraLinha = true; // Ignora a primeira linha (cabeçalho)
-        int numeroDaLinha = 0; // Contador para o número da linha
+        boolean primeiraLinha = true;
+        int numeroDaLinha = 0;
 
         try {
             scanner = new Scanner(ficheiroCidades);
@@ -119,7 +118,7 @@ public class Main {
             return false;
         }
 
-        while (scanner.hasNext()) {
+        while (scanner.hasNextLine()) {
             String linha = scanner.nextLine();
             numeroDaLinha++;
 
@@ -128,7 +127,8 @@ public class Main {
                 continue;
             }
 
-            String[] partes = linha.split(",");   // le os compeonentes apesar das ',' nos ficheiros
+            String[] partes = linha.split(",");
+
             if (partes.length == 6) {
                 try {
                     String alfa2 = partes[0];
@@ -138,9 +138,9 @@ public class Main {
                     double latitude = Double.parseDouble(partes[4]);
                     double longitude = Double.parseDouble(partes[5]);
 
-                    if (alfa2.length() == 2 && !(regiao > 0) && populacao > 0) {  // regiao é um int portanto confirmar (REVER ISTO)
-
+                    if (alfa2.length() == 2 && regiao > 0 && populacao > 0) {
                         boolean paisEncontrado = false;
+
                         for (Pais pais : paises) {
                             if (pais.alfa2.equalsIgnoreCase(alfa2)) {
                                 paisEncontrado = true;
@@ -152,7 +152,6 @@ public class Main {
                             Cidade cidadeEnc = new Cidade(alfa2, nomeCidade, regiao, populacao, latitude, longitude);
                             cidades.add(cidadeEnc);
                             inputInvalidoCidades.contalinhascorretas();
-
                         } else {
                             inputInvalidoCidades.contalinhasIncorretas(numeroDaLinha);
                         }
@@ -166,65 +165,72 @@ public class Main {
                 inputInvalidoCidades.contalinhasIncorretas(numeroDaLinha);
             }
         }
+
         scanner.close();
         inputInvalido.add(inputInvalidoCidades);
         return true;
-    }  // algo aqui esta errado pq submeti e nao deu o 2/9
+    }
 
 
     // FAZER AS VALIDAÇOES: ID etc...
 
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) {
         System.out.println("Bem-vindo ao DEISI World Meter");
 
+        File pasta = new File("test-files"); // podes manter esta pasta se ela existir mesmo
+
+        System.out.println("Pasta usada: " + pasta.getAbsolutePath());
+
         long start = System.currentTimeMillis();
-        boolean parseOk = parseFiles(new File("test-files"));
+        boolean parseOk = parseFiles(pasta);
 
         if (!parseOk) {
             System.out.println("Erro na leitura dos ficheiros");
             return;
         }
+
         System.out.println("Leitura concluída");
         long end = System.currentTimeMillis();
-        System.out.println("Ficheiros lidos com sucesso em " + (end-start) + "ms" );
+        System.out.println("Ficheiros lidos com sucesso em " + (end - start) + " ms");
         System.out.println();
 
         System.out.println("TESTAR PAISES");
         System.out.println(paises);
+
         ArrayList paisesLidos = getObjects(TipoEntidade.PAIS);
-        System.out.println("Teste 1: Quantidade paises no ficheiro");
-        System.out.println("Total paises: " + paisesLidos.size());
+        System.out.println("Teste 1: Quantidade de países no ficheiro");
+        System.out.println("Total países: " + paisesLidos.size());
         System.out.println();
 
         System.out.println("TESTAR CIDADES");
         System.out.println(cidades);
+
+
         ArrayList cidadesLidas = getObjects(TipoEntidade.CIDADE);
         System.out.println("Teste 2: Quantidade de cidades no ficheiro");
         System.out.println("Total cidades: " + cidadesLidas.size());
         System.out.println();
 
-
-        System.out.println("Teste 2: Ver primeiros 3 paises");
-        for (int i = 0; i < 3 && i < paisesLidos.size(); i++) { // vê os primeiros 3
+        System.out.println("Teste 3: Ver primeiros 3 países");
+        for (int i = 0; i < 3 && i < paisesLidos.size(); i++) {
             System.out.println(paisesLidos.get(i));
         }
         System.out.println();
 
-        System.out.println("Teste 3: Ver últimos 5 paises do ficheiro");
-        for (int i = paisesLidos.size() - 2; i<paisesLidos.size(); i++) { // vê os primeiros 3
+        System.out.println("Teste 4: Ver últimos 5 países");
+        for (int i = Math.max(0, paisesLidos.size() - 5); i < paisesLidos.size(); i++) {
             System.out.println(paisesLidos.get(i));
         }
-        //TESTE 4: Teste de erro:
-            // Cria uma linha inválida no CSV:
-            // é suposto o programa nao falhar, e a linha ser ignorada ex: 123,PT
-
         System.out.println();
+
         System.out.println("Informações sobre a leitura de ficheiros:");
         System.out.println("nome | linhas OK | linhas NOK | primeira linha NOK");
-        ArrayList inputsInvalidos = getObjects(TipoEntidade.INPUT_INVALIDO);
-        System.out.println(inputsInvalidos.get(0));
 
+        ArrayList inputsInvalidos = getObjects(TipoEntidade.INPUT_INVALIDO);
+        for (int i = 0; i < inputsInvalidos.size(); i++) {
+            System.out.println(inputsInvalidos.get(i));
+        }
     }
 }
 
