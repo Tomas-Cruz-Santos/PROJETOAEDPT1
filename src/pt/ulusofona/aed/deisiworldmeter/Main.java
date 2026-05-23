@@ -3,8 +3,10 @@ package pt.ulusofona.aed.deisiworldmeter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Scanner;
 // 9/9
+
 public class Main {
     static ArrayList<Pais> paises = new ArrayList<>();
     static ArrayList<Cidade> cidades = new ArrayList<>();
@@ -40,6 +42,9 @@ public class Main {
         }
         lerPaises(new File(folder, "paises.csv"));
         lerCidades(new File(folder, "cidades.csv"));
+
+        removerPaisSemCidade();
+
         lerPopulacao(new File(folder, "populacao.csv"));
 
         return true;
@@ -171,6 +176,41 @@ public class Main {
         inputInvalido.add(inputInvalidoCidades);
         return true;
     }
+
+    static void removerPaisSemCidade() {
+        ArrayList<Pais> paisesFormatados = new ArrayList<>();
+        HashSet<String> paisesComCidades = new HashSet<>();
+        InputInvalido primeiroInputInvalido = inputInvalido.get(0);
+
+        int linhasIncorretas = 0;
+        int primeiraLinha = 1;
+        boolean primeiraLinhaErrada = true;
+
+        for (Cidade cidade : cidades) {
+            paisesComCidades.add(cidade.alfa2);
+        }
+
+        for (Pais pais : paises) {
+            if (primeiraLinhaErrada) {
+                primeiraLinha++;
+            }
+            if (paisesComCidades.contains(pais.alfa2)) {
+                paisesFormatados.add(pais);
+
+            } else {
+                linhasIncorretas++;
+                primeiraLinhaErrada = false;
+            }
+        }
+
+        paises = paisesFormatados;
+
+        primeiroInputInvalido.linhasCorretas -= linhasIncorretas;
+        primeiroInputInvalido.linhasIncorretas += linhasIncorretas;
+        primeiroInputInvalido.primeiraLinhaIncorreta = primeiraLinha;
+    }
+
+
     static boolean lerPopulacao(File ficheiroPopulacao) {
         Scanner scanner = null;
         InputInvalido inputInvalidoPopulacao = new InputInvalido(ficheiroPopulacao.getName());
@@ -234,62 +274,94 @@ public class Main {
         return true;
     }
 
+
+
+    public static String comandoHelp() {
+        StringBuilder resultado = new StringBuilder();
+        resultado.append("-------------------------\n");
+        resultado.append("Commands available:\n");
+        resultado.append("COUNT_CITIES <min_population>\n");
+        resultado.append("GET_CITIES_BY_COUNTRY <num-results> <country-name>\n");
+        resultado.append("SUM_POPULATIONS <countries-list>\n");
+        resultado.append("GET_HISTORY <year-start> <year-end> <country-name>\n");
+        resultado.append("GET_MISSING_HISTORY <year-start> <year-end>\n");
+        resultado.append("GET_MOST_POPULOUS <num-results>\n");
+        resultado.append("GET_TOP_CITIES_BY_COUNTRY <num-results> <country-name>\n");
+        resultado.append("GET_DUPLICATE_CITIES <min_population>\n");
+        resultado.append("GET_COUNTRIES_GENDER_GAP <min-gender-gap>\n");
+        resultado.append("GET_TOP_POPULATION_INCREASE <year-start> <year-end>\n");
+        resultado.append("GET_DUPLICATE_CITIES_DIFFERENT_COUNTRIES <min-population>\n");
+        resultado.append("GET_CITIES_AT_DISTANCE <distance> <country-name>\n");
+        resultado.append("GET_CITIES_AT_DISTANCE2 <distance> <country-name>\n");
+        resultado.append("GET_CITIES_WHITIN_RADIUS <radius> <central-city>\n");
+        resultado.append("INSERT_CITY <alfa2> <city-name> <region> <population>\n");
+        resultado.append("REMOVE_COUNTRY <country-name>\n");
+        resultado.append("HELP\n");
+        resultado.append("QUIT\n");
+        resultado.append("-------------------------\n");
+        return resultado.toString();
+    }
+
+    public static Result execute(String command) {
+        String[] parts = command.split(" ");
+        switch (parts[0]) {                 // FAZER COMANDOS
+
+            case "HELP":
+                return new Result(true, null, comandoHelp());
+
+            default:
+                return new Result(false, "Comando invalido", null);
+        }
+    }
+
     public static void main(String[] args) {
-        System.out.println("Bem-vindo ao DEISI World Meter");
-
-        File pasta = new File("test-files"); // podes manter esta pasta se ela existir mesmo
-
-        System.out.println("Pasta usada: " + pasta.getAbsolutePath());
+        System.out.println("Welcome to DEISI World Meter");
 
         long start = System.currentTimeMillis();
+        File pasta = new File("test-files");
         boolean parseOk = parseFiles(pasta);
-
         if (!parseOk) {
-            System.out.println("Erro na leitura dos ficheiros");
+            System.out.println("Error loading files");
             return;
         }
-
-        System.out.println("Leitura concluída");
         long end = System.currentTimeMillis();
-        System.out.println("Ficheiros lidos com sucesso em " + (end - start) + " ms");
-        System.out.println();
 
-        System.out.println("TESTAR PAISES");
-        System.out.println(paises);
-
-        ArrayList paisesLidos = getObjects(TipoEntidade.PAIS);
-        System.out.println("Teste 1: Quantidade de países no ficheiro");
-        System.out.println("Total países: " + paisesLidos.size());
-        System.out.println();
-
-        System.out.println("TESTAR CIDADES");
-        System.out.println(cidades);
+        System.out.println("Loaded files in " + (end - start) + " ms\n");
 
 
-        ArrayList cidadesLidas = getObjects(TipoEntidade.CIDADE);
-        System.out.println("Teste 2: Quantidade de cidades no ficheiro");
-        System.out.println("Total cidades: " + cidadesLidas.size());
-        System.out.println();
+        ArrayList<Object> resultados;
 
-        System.out.println("Teste 3: Ver primeiros 3 países");
-        for (int i = 0; i < 3 && i < paisesLidos.size(); i++) {
-            System.out.println(paisesLidos.get(i));
+        // Teste para INPUT_INVALIDO
+        System.out.println("Resultados para INPUT_INVALIDO:");
+        resultados = getObjects(TipoEntidade.INPUT_INVALIDO);
+        for (Object obj : resultados) {
+            System.out.println(obj);
         }
-        System.out.println();
 
-        System.out.println("Teste 4: Ver últimos 5 países");
-        for (int i = Math.max(0, paisesLidos.size() - 5); i < paisesLidos.size(); i++) {
-            System.out.println(paisesLidos.get(i));
-        }
-        System.out.println();
+        Result result = execute("HELP");
+        System.out.println(result.result);
 
-        System.out.println("Informações sobre a leitura de ficheiros:");
-        System.out.println("nome | linhas OK | linhas NOK | primeira linha NOK");
+        Scanner in = new Scanner(System.in);
 
-        ArrayList inputsInvalidos = getObjects(TipoEntidade.INPUT_INVALIDO);
-        for (int i = 0; i < inputsInvalidos.size(); i++) {
-            System.out.println(inputsInvalidos.get(i));
-        }
+        String line;
+
+        do {
+            System.out.print("> ");
+            line = in.nextLine(); // Read input at the start of the loop
+
+            if (line != null && !line.equals("QUIT")) {
+                start = System.currentTimeMillis();
+                result = execute(line);
+                end = System.currentTimeMillis();
+
+                if (!result.success) {
+                    System.out.println("Error " + result.error);
+                } else {
+                    System.out.println(result.result);
+                    System.out.println("(took " + (end - start) + " ms)");
+                }
+            }
+        } while (line != null && !line.equals("QUIT"));
     }
 }
 
