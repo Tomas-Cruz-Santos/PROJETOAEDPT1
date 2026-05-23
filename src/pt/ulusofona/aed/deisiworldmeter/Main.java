@@ -210,6 +210,7 @@ public class Main {
         primeiroInputInvalido.primeiraLinhaIncorreta = primeiraLinha;
     }
 
+    // POPULAÇAO FUN NOVA
 
     static boolean lerPopulacao(File ficheiroPopulacao) {
         Scanner scanner = null;
