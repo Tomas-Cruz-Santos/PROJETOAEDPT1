@@ -276,6 +276,7 @@ public class Main {
     }
 
 
+
     public static String comandoHelp() {
         StringBuilder resultado = new StringBuilder();
         resultado.append("-------------------------\n");
@@ -361,8 +362,7 @@ public class Main {
                     System.out.println("(took " + (end - start) + " ms)");
                 }
             }
-        }
-        while (line != null && !line.equals("QUIT"));
+        } while (line != null && !line.equals("QUIT"));
     }
 }
 
