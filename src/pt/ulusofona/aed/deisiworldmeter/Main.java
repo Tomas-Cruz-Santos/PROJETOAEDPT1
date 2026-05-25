@@ -358,6 +358,35 @@ public class Main {
 
                 return new Result(true, null, sb.toString());
 
+            case "SUM_POPULATIONS":
+                String[] paises2 = parts[1].split(",");
+                long totalPop = 0;
+
+                for (String nomePais2 : paises2) {
+                    // encontrar o país
+                    Pais paisTotal = null;
+                    for (Pais pais : paises) {
+                        if (pais.nome.equalsIgnoreCase(nomePais2)) {
+                            paisTotal = pais;
+                            break;
+                        }
+                    }
+
+                    if (paisTotal == null) {
+                        continue; // ignora países inválidos
+                    }
+
+                    // encontrar população de 2024
+                    for (Populacao pop : populacoes) {
+                        if (pop.id == paisTotal.id && pop.ano == 2024) {
+                            totalPop += pop.populacaoMasculina + pop.populacaoFeminina;
+                            break;
+                        }
+                    }
+                }
+
+                return new Result(true, null, String.valueOf(totalPop));
+
             default:
                 return new Result(false, "Comando invalido", null);
         }
