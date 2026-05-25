@@ -311,10 +311,52 @@ public class Main {
     // PARTE 2 : EXECUTE
     public static Result execute(String command) {
         String[] parts = command.split(" ");
-        switch (parts[0]) {                 // FAZER COMANDOS
-
+        switch (parts[0]) {
+        // FAZER COMANDOS
             case "HELP":
                 return new Result(true, null, comandoHelp());
+
+            case "COUNT_CITIES":
+                int minPop = Integer.parseInt(parts[1]);
+                int count = 0;
+                for (Cidade cidade : cidades) {
+                    if (cidade.populacao >= minPop) {
+                        count++;
+                    }
+                }
+                return new Result(true, null, String.valueOf(count));
+
+            case "GET_CITIES_BY_COUNTRY":
+                int numResults = Integer.parseInt(parts[1]);
+                String nomePais = parts[2];
+
+                // verificar se o país existe
+                Pais paisEncontrado = null;
+                for (Pais pais : paises) {
+                    if (pais.nome.equalsIgnoreCase(nomePais)) {
+                        paisEncontrado = pais;
+                        break;
+                    }
+                }
+
+                if (paisEncontrado == null) {
+                    return new Result(false, "Pais invalido: " + nomePais, null);
+                }
+
+                // obter cidades do país pela ordem do ficheiro
+                StringBuilder sb = new StringBuilder();
+                int contador = 0;
+                for (Cidade cidade : cidades) {
+                    if (cidade.alfa2.equalsIgnoreCase(paisEncontrado.alfa2)) {
+                        sb.append(cidade.cidade).append("\n");
+                        contador++;
+                        if (contador == numResults) {
+                            break;
+                        }
+                    }
+                }
+
+                return new Result(true, null, sb.toString());
 
             default:
                 return new Result(false, "Comando invalido", null);
