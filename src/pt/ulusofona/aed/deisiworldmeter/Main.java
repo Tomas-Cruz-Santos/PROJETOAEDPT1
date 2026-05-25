@@ -5,13 +5,19 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
-// 9/9
+
 
 public class Main {
+
+    // PARTE 1 : Estrutura de Dados
     static ArrayList<Pais> paises = new ArrayList<>();
     static ArrayList<Cidade> cidades = new ArrayList<>();
     static ArrayList<InputInvalido> inputInvalido = new ArrayList<>();
+    // PARTE 2 : Estrutura de Dados
+    static ArrayList<Populacao> populacoes = new ArrayList<>();
 
+
+    // PARTE 1 :  GET OBJECTS
     public static ArrayList getObjects(TipoEntidade tipo) {
         if (tipo == TipoEntidade.PAIS) {
             return paises;
@@ -24,10 +30,11 @@ public class Main {
         }
         return null;
     }
-
+    // PARTE 1 : PARSE FILES
     public static boolean parseFiles(File folder) {
         paises = new ArrayList<>();// evita duplicados
         cidades = new ArrayList<>();
+        populacoes = new ArrayList<>();
         inputInvalido = new ArrayList<>();
 
         String[] Ficheiros = {"paises.csv", "cidades.csv", "populacao.csv"};   // leitura de ficheiros
@@ -49,7 +56,7 @@ public class Main {
 
         return true;
     }
-
+    // PARTE 1 : LER PAISES
     static boolean lerPaises(File ficheiroPaises) {
         Scanner scanner = null;
         InputInvalido inputInvalidoPaises = new InputInvalido(ficheiroPaises.getName());
@@ -111,7 +118,7 @@ public class Main {
         inputInvalido.add(inputInvalidoPaises);
         return true;
     }
-
+    // PARTE 1 : LER CIDADES
     static boolean lerCidades(File ficheiroCidades) {
         Scanner scanner = null;
         InputInvalido inputInvalidoCidades = new InputInvalido(ficheiroCidades.getName());
@@ -177,6 +184,8 @@ public class Main {
         return true;
     }
 
+
+    // PARTE 2 : REMOVER PAISES SEM CIDADES
     static void removerPaisSemCidade() {
         ArrayList<Pais> paisesFormatados = new ArrayList<>();
         HashSet<String> paisesComCidades = new HashSet<>();
@@ -209,9 +218,7 @@ public class Main {
         primeiroInputInvalido.linhasIncorretas += linhasIncorretas;
         primeiroInputInvalido.primeiraLinhaIncorreta = primeiraLinha;
     }
-
-    // POPULAÇAO FUN NOVA
-
+    // PARTE 2 : LER POPULACAO (CORRIGIDO)
     static boolean lerPopulacao(File ficheiroPopulacao) {
         Scanner scanner = null;
         InputInvalido inputInvalidoPopulacao = new InputInvalido(ficheiroPopulacao.getName());
@@ -238,15 +245,12 @@ public class Main {
             if (partes.length == 5) {
                 try {
                     int idPais = Integer.parseInt(partes[0]);
-
-                    // valida os outros campos sem guardar
-                    Integer.parseInt(partes[1]);
-                    Double.parseDouble(partes[2]);
-                    Double.parseDouble(partes[3]);
-                    Double.parseDouble(partes[4]);
+                    int ano = Integer.parseInt(partes[1]);
+                    int popMasculina = (int) Double.parseDouble(partes[2]);
+                    int popFeminina = (int) Double.parseDouble(partes[3]);
+                    double densidade = Double.parseDouble(partes[4]);
 
                     Pais paisEncontrado = null;
-
                     for (Pais pais : paises) {
                         if (pais.id == idPais) {
                             paisEncontrado = pais;
@@ -255,6 +259,7 @@ public class Main {
                     }
 
                     if (paisEncontrado != null) {
+                        populacoes.add(new Populacao(idPais, ano, popMasculina, popFeminina, densidade));
                         inputInvalidoPopulacao.contalinhascorretas();
 
                         if (paisEncontrado.id > 700) {
@@ -267,6 +272,8 @@ public class Main {
                 } catch (NumberFormatException e) {
                     inputInvalidoPopulacao.contalinhasIncorretas(numeroDaLinha);
                 }
+            } else {
+                inputInvalidoPopulacao.contalinhasIncorretas(numeroDaLinha);
             }
         }
 
@@ -275,8 +282,7 @@ public class Main {
         return true;
     }
 
-
-
+    // PARTE 2 : COMANDO HELP
     public static String comandoHelp() {
         StringBuilder resultado = new StringBuilder();
         resultado.append("-------------------------\n");
@@ -302,7 +308,7 @@ public class Main {
         resultado.append("-------------------------\n");
         return resultado.toString();
     }
-
+    // PARTE 2 : EXECUTE
     public static Result execute(String command) {
         String[] parts = command.split(" ");
         switch (parts[0]) {                 // FAZER COMANDOS
@@ -314,6 +320,7 @@ public class Main {
                 return new Result(false, "Comando invalido", null);
         }
     }
+
 
     public static void main(String[] args) {
         System.out.println("Welcome to DEISI World Meter");
