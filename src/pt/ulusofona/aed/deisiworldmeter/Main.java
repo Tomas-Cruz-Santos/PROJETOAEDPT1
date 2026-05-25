@@ -363,7 +363,7 @@ public class Main {
                 long totalPop = 0;
 
                 for (String nomePais2 : paises2) {
-                    // encontrar o país
+                    // encontrar o país!
                     Pais paisTotal = null;
                     for (Pais pais : paises) {
                         if (pais.nome.equalsIgnoreCase(nomePais2)) {
