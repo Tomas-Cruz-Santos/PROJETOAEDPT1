@@ -250,8 +250,8 @@ public class Main {
                 try {
                     int idPais = Integer.parseInt(partes[0]);
                     int ano = Integer.parseInt(partes[1]);
-                    int popMasculina = (int) Double.parseDouble(partes[2]);
-                    int popFeminina = (int) Double.parseDouble(partes[3]);
+                    long popMasculina = (long) Double.parseDouble(partes[2]);
+                    long popFeminina = (long) Double.parseDouble(partes[3]);
                     double densidade = Double.parseDouble(partes[4]);
 
                     Pais paisEncontrado = null;
@@ -383,7 +383,8 @@ public class Main {
                 return new Result(true, null, sb.toString());
 
             case "SUM_POPULATIONS":
-                String[] paisesLista = parts[1].split(",");
+                String listaPaises = command.substring(parts[0].length() + 1);
+                String[] paisesLista = listaPaises.split(",");
                 long totalPop = 0;
 
                 // HashMap nome -> Pais
@@ -403,7 +404,7 @@ public class Main {
                 for (String nomePais2 : paisesLista) {
                     Pais paisTotal = mapaSumPop.get(nomePais2.toLowerCase());
                     if (paisTotal == null) {
-                        continue;
+                        return new Result(false, "Pais invalido: " + nomePais2, null);
                     }
                     Populacao pop2024 = mapaPop2024.get(paisTotal.id);
                     if (pop2024 != null) {
@@ -482,11 +483,13 @@ public class Main {
 
             case "INSERT_CITY":
                 String alfa2Insert = parts[1];
-                String nomeInsert = parts[2];
-                String regiaoInsert = parts[3];
-                double popInsert = Double.parseDouble(parts[4]);
+                String regiaoInsert = parts[parts.length - 2];
+                double popInsert = Double.parseDouble(parts[parts.length - 1]);
+                String nomeInsert = command.substring(
+                        parts[0].length() + parts[1].length() + 2,
+                        command.length() - parts[parts.length - 1].length() - parts[parts.length - 2].length() - 2
+                );
 
-                // HashMap alfa2 -> Pais
                 HashMap<String, Pais> mapaInsert = new HashMap<>();
                 for (Pais pais : paises) {
                     mapaInsert.put(pais.alfa2.toUpperCase(), pais);
