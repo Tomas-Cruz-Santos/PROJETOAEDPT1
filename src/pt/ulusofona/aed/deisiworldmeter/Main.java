@@ -372,7 +372,7 @@ public class Main {
                     }
 
                     if (paisTotal == null) {
-                        return new Result(false, "Pais invalido: " + nomePais2, null);
+                        continue; // ignora países inválidos
                     }
 
                     for (Populacao pop : populacoes) {
@@ -451,6 +451,65 @@ public class Main {
                 }
 
                 return new Result(true, null, sbMissing.toString());
+            case "INSERT_CITY":
+                String alfa2Insert = parts[1];
+                String nomeInsert = parts[2];
+                String regiaoInsert = parts[3];
+                double popInsert = Double.parseDouble(parts[4]);
+
+                // verificar se o país existe
+                Pais paisInsert = null;
+                for (Pais pais : paises) {
+                    if (pais.alfa2.equalsIgnoreCase(alfa2Insert)) {
+                        paisInsert = pais;
+                        break;
+                    }
+                }
+
+                if (paisInsert == null) {
+                    return new Result(false, "Pais invalido", null);
+                }
+
+                Cidade novaCidade = new Cidade(alfa2Insert, nomeInsert, regiaoInsert, popInsert, 0.0, 0.0);
+                cidades.add(novaCidade);
+                return new Result(true, null, "Inserido com sucesso");
+            case "REMOVE_COUNTRY":
+                String nomeRemover = parts[1];
+
+                Pais paisRemover = null;
+                for (Pais pais : paises) {
+                    if (pais.nome.equalsIgnoreCase(nomeRemover)) {
+                        paisRemover = pais;
+                        break;
+                    }
+                }
+
+                if (paisRemover == null) {
+                    return new Result(false, "Pais invalido", null);
+                }
+
+                // remover o país
+                paises.remove(paisRemover);
+
+                // remover as cidades do país
+                ArrayList<Cidade> cidadesRemover = new ArrayList<>();
+                for (Cidade cidade : cidades) {
+                    if (cidade.alfa2.equalsIgnoreCase(paisRemover.alfa2)) {
+                        cidadesRemover.add(cidade);
+                    }
+                }
+                cidades.removeAll(cidadesRemover);
+
+                // remover as populações do país
+                ArrayList<Populacao> popRemover = new ArrayList<>();
+                for (Populacao pop : populacoes) {
+                    if (pop.id == paisRemover.id) {
+                        popRemover.add(pop);
+                    }
+                }
+                populacoes.removeAll(popRemover);
+
+                return new Result(true, null, "Removido com sucesso");
 
             default:
                 return new Result(false, "Comando invalido", null);
