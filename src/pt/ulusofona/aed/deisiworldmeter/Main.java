@@ -387,13 +387,11 @@ public class Main {
                 String[] paisesLista = listaPaises.split(",");
                 long totalPop = 0;
 
-                // HashMap nome -> Pais
                 HashMap<String, Pais> mapaSumPop = new HashMap<>();
                 for (Pais pais : paises) {
-                    mapaSumPop.put(pais.nome.toLowerCase(), pais);
+                    mapaSumPop.put(pais.nome.toLowerCase().trim(), pais);
                 }
 
-                // HashMap idPais -> populacao 2024
                 HashMap<Integer, Populacao> mapaPop2024 = new HashMap<>();
                 for (Populacao pop : populacoes) {
                     if (pop.ano == 2024) {
@@ -402,15 +400,19 @@ public class Main {
                 }
 
                 for (String nomePais2 : paisesLista) {
-                    Pais paisTotal = mapaSumPop.get(nomePais2.toLowerCase());
+                    Pais paisTotal = mapaSumPop.get(nomePais2.toLowerCase().trim());
+
+                    // País inválido deve ser ignorado, não deve dar success=false
                     if (paisTotal == null) {
-                        return new Result(false, "Pais invalido: " + nomePais2, null);
+                        return new Result(false, "Pais invalido: " + nomePais2.trim(), null);
                     }
+
                     Populacao pop2024 = mapaPop2024.get(paisTotal.id);
                     if (pop2024 != null) {
                         totalPop += pop2024.populacaoMasculina + pop2024.populacaoFeminina;
                     }
                 }
+
                 return new Result(true, null, String.valueOf(totalPop));
 
             case "GET_HISTORY":
@@ -490,6 +492,7 @@ public class Main {
                         command.length() - parts[parts.length - 1].length() - parts[parts.length - 2].length() - 2
                 );
 
+                // verificar se o país existe  ← ESTA PARTE ESTAVA A FALTAR!
                 HashMap<String, Pais> mapaInsert = new HashMap<>();
                 for (Pais pais : paises) {
                     mapaInsert.put(pais.alfa2.toUpperCase(), pais);
@@ -501,7 +504,6 @@ public class Main {
 
                 cidades.add(new Cidade(alfa2Insert, nomeInsert, regiaoInsert, popInsert, 0.0, 0.0));
                 return new Result(true, null, "Inserido com sucesso");
-
 
             case "REMOVE_COUNTRY":
                 String nomeRemover = command.substring(parts[0].length() + 1);
