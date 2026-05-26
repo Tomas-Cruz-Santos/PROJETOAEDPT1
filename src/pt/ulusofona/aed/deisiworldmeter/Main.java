@@ -383,7 +383,7 @@ public class Main {
                     }
                 }
 
-                return new Result(true, null, String.valueOf(totalPop) + "\n");
+                return new Result(true, null, String.valueOf(totalPop));
 
 
             case "GET_HISTORY":
@@ -442,7 +442,7 @@ public class Main {
                         }
                     }
                     if (faltaAlgum) {
-                        sbMissing.append(pais.alfa2).append(" ").append(pais.nome).append("\n");
+                        sbMissing.append(pais.alfa2.toLowerCase()).append(":").append(pais.nome).append("\n");
                     }
                 }
 
