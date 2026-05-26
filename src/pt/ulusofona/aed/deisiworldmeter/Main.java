@@ -479,6 +479,7 @@ public class Main {
                 }
                 return new Result(true, null, sbMissing.toString());
 
+
             case "INSERT_CITY":
                 String alfa2Insert = parts[1];
                 String nomeInsert = parts[2];
@@ -497,6 +498,7 @@ public class Main {
 
                 cidades.add(new Cidade(alfa2Insert, nomeInsert, regiaoInsert, popInsert, 0.0, 0.0));
                 return new Result(true, null, "Inserido com sucesso");
+
 
             case "REMOVE_COUNTRY":
                 String nomeRemover = command.substring(parts[0].length() + 1);
@@ -518,6 +520,7 @@ public class Main {
                 populacoes.removeIf(pop -> pop.id == paisRemover.id);
 
                 return new Result(true, null, "Removido com sucesso");
+
 
             case "GET_MOST_POPULOUS":
                 int numResultsMP = Integer.parseInt(parts[1]);
@@ -560,54 +563,45 @@ public class Main {
                 }
                 return new Result(true, null, sbMP.toString());
 
+
             case "GET_TOP_CITIES_BY_COUNTRY":
                 int numResultsTop = Integer.parseInt(parts[1]);
-                String nomePaisTop = command.substring(parts[0].length() + parts[1].length() + 2);
+                String nomePaisTop = parts[2];
 
-                HashMap<String, Pais> mapaTop = new HashMap<>();
+                ArrayList<Cidade> cidadesDoPais = new ArrayList<>();
                 for (Pais pais : paises) {
-                    mapaTop.put(pais.nome.toLowerCase(), pais);
-                }
-
-                Pais paisTop = mapaTop.get(nomePaisTop.toLowerCase());
-                if (paisTop == null) {
-                    return new Result(false, "Pais invalido: " + nomePaisTop, null);
-                }
-
-                ArrayList<Cidade> cidadesPais = new ArrayList<>();
-                for (Cidade cidade : cidades) {
-                    if (cidade.alfa2.equalsIgnoreCase(paisTop.alfa2)) {
-                        cidadesPais.add(cidade);
+                    if (pais.nome.equals(nomePaisTop)) {          // usa a variável local
+                        for (Cidade cidade : cidades) {
+                            if (cidade.alfa2.equals(pais.alfa2) && cidade.populacao >= 10000) {
+                                cidadesDoPais.add(cidade);
+                            }
+                        }
+                        break;
                     }
                 }
 
-                for (int i = 0; i < cidadesPais.size() - 1; i++) {
-                    for (int j = i + 1; j < cidadesPais.size(); j++) {
-                        Cidade ci = cidadesPais.get(i);
-                        Cidade cj = cidadesPais.get(j);
-                        long popI = (long) (ci.populacao / 1000);
-                        long popJ = (long) (cj.populacao / 1000);
-                        boolean trocar = false;
-                        if (popJ > popI) {
-                            trocar = true;
-                        } else if (popJ == popI && cj.cidade.compareTo(ci.cidade) < 0) {
-                            trocar = true;
-                        }
-                        if (trocar) {
-                            cidadesPais.set(i, cj);
-                            cidadesPais.set(j, ci);
-                        }
+                cidadesDoPais.sort((c1, c2) -> {
+                    int comparar = Integer.compare((int) c2.populacao / 1000, (int) c1.populacao / 1000);
+                    if (comparar != 0) {
+                        return comparar;
                     }
+                    return c1.cidade.compareTo(c2.cidade);
+                });
+
+                if (numResultsTop != -1) {  // quando -1 le desde o inicio
+                    int numReais = Math.min(numResultsTop, cidadesDoPais.size());
+                    cidadesDoPais = new ArrayList<>(cidadesDoPais.subList(0, numReais));
                 }
 
-                int limiteTop = numResultsTop == -1 ? cidadesPais.size() : Math.min(numResultsTop, cidadesPais.size());
-                StringBuilder sbTop = new StringBuilder();
-                for (int i = 0; i < limiteTop; i++) {
-                    Cidade c = cidadesPais.get(i);
-                    long popK = (long) (c.populacao / 1000);
-                    sbTop.append(c.cidade).append(":").append(popK).append("K\n");
+                StringBuilder resultTop = new StringBuilder();
+                for (Cidade cidade : cidadesDoPais) {
+                    resultTop.append(cidade.cidade)   // ordem alfsbetica caso tenha o mesmo valor
+                            .append(":")
+                            .append((int) cidade.populacao / 1000)
+                            .append("K\n");
                 }
-                return new Result(true, null, sbTop.toString());
+                return new Result(true, null, resultTop.toString());
+
 
             case "GET_COUNTRIES_GENDER_GAP":
                 int minGap = Integer.parseInt(parts[1]);
@@ -640,6 +634,7 @@ public class Main {
                     return new Result(true, null, "Sem resultados");
                 }
                 return new Result(true, null, sbGap.toString());
+
 
             case "GET_TOP_POPULATION_INCREASE":
                 int anoInicioIncrease = Integer.parseInt(parts[1]);
@@ -711,6 +706,8 @@ public class Main {
                     return new Result(true, null, "Sem resultados");
                 }
                 return new Result(true, null, sbIncrease.toString());
+
+
             case "GET_DUPLICATE_CITIES":
                 int minPopDup = Integer.parseInt(parts[1]);
 
