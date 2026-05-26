@@ -30,6 +30,7 @@ public class Main {
         }
         return null;
     }
+
     // PARTE 1 : PARSE FILES
     public static boolean parseFiles(File folder) {
         paises = new ArrayList<>();// evita duplicados
@@ -51,6 +52,7 @@ public class Main {
         lerCidades(new File(folder, "cidades.csv"));
 
         removerPaisSemCidade();
+        paisEPopulacao();
 
         lerPopulacao(new File(folder, "populacao.csv"));
 
@@ -280,6 +282,31 @@ public class Main {
         scanner.close();
         inputInvalido.add(inputInvalidoPopulacao);
         return true;
+    }
+
+    static void paisEPopulacao() {
+        ArrayList<Populacao> populacaoFormatada = new ArrayList<>();
+        HashSet<Integer> paisesComPopulacao = new HashSet<>();
+        InputInvalido segundoInvalido = inputInvalido.get(0);
+
+        int numeroLinha = 2;
+        int linhasIncorretas = 0;
+
+        for (Pais pais : paises) {
+            paisesComPopulacao.add(pais.id);
+        }
+
+        for (Populacao populacao : populacoes) {
+            if(paisesComPopulacao.contains(populacao.id)) {
+                populacaoFormatada.add(populacao);
+            } else {
+                linhasIncorretas++;
+                segundoInvalido.contalinhasIncorretas(numeroLinha);
+                segundoInvalido.linhasCorretas--;
+            }
+            numeroLinha++;
+        }
+        populacoes = populacaoFormatada;
     }
 
     // PARTE 2 : COMANDO HELP
