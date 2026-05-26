@@ -499,7 +499,7 @@ public class Main {
                 return new Result(true, null, "Inserido com sucesso");
 
             case "REMOVE_COUNTRY":
-                String nomeRemover = parts[1];
+                String nomeRemover = command.substring(parts[0].length() + 1);
 
                 // HashMap nome -> Pais
                 HashMap<String, Pais> mapaRemover = new HashMap<>();
@@ -630,7 +630,7 @@ public class Main {
                     double fem = pop2024.populacaoFeminina;
                     double gap = Math.abs(masc - fem) / (masc + fem) * 100;
                     if (gap >= minGap) {
-                        double gapTruncado = Math.floor(gap * 100) / 100;
+                        double gapTruncado = Math.round(gap * 100.0) / 100.0;
                         sbGap.append(pais.nome).append(":")
                                 .append(String.format(java.util.Locale.US, "%.2f", gapTruncado)).append("\n");
                     }
@@ -645,7 +645,6 @@ public class Main {
                 int anoInicioIncrease = Integer.parseInt(parts[1]);
                 int anoFimIncrease = Integer.parseInt(parts[2]);
 
-                // HashMap idPais -> TreeMap ano -> Populacao (ordenado por ano)
                 HashMap<Integer, TreeMap<Integer, Populacao>> mapaPopsIncrease = new HashMap<>();
                 for (Populacao pop : populacoes) {
                     if (pop.ano >= anoInicioIncrease && pop.ano <= anoFimIncrease) {
@@ -670,23 +669,23 @@ public class Main {
 
                     ArrayList<Populacao> lista = new ArrayList<>(popsOrdenadas.values());
 
-                    // só pares consecutivos!
-                    for (int i = 0; i < lista.size() - 1; i++) {
-                        Populacao popAnterior = lista.get(i);
-                        Populacao popAtual = lista.get(i + 1);
-                        double totalAnterior = popAnterior.populacaoMasculina + popAnterior.populacaoFeminina;
-                        double totalAtual = popAtual.populacaoMasculina + popAtual.populacaoFeminina;
-                        double aumento = totalAtual - totalAnterior;
-                        if (aumento > 0) {
-                            double percentagem = aumento / totalAtual * 100;
-                            double percentagemFinal = Math.round(percentagem * 100.0) / 100.0;
-                            aumentos.add(new double[]{percentagemFinal});
-                            nomesAumentos.add(paisIncrease.nome + ":" + popAnterior.ano + "-" + popAtual.ano);
+                    for (int i = 0; i < lista.size(); i++) {
+                        for (int j = i + 1; j < lista.size(); j++) {
+                            Populacao popAnterior = lista.get(i);
+                            Populacao popAtual = lista.get(j);
+                            double totalAnterior = popAnterior.populacaoMasculina + popAnterior.populacaoFeminina;
+                            double totalAtual = popAtual.populacaoMasculina + popAtual.populacaoFeminina;
+                            double aumento = totalAtual - totalAnterior;
+                            if (aumento > 0) {
+                                double percentagem = aumento / totalAtual * 100;
+                                double percentagemFinal = Math.round(percentagem * 100.0) / 100.0;
+                                aumentos.add(new double[]{percentagemFinal});
+                                nomesAumentos.add(paisIncrease.nome + ":" + popAnterior.ano + "-" + popAtual.ano);
+                            }
                         }
                     }
                 }
 
-                // ordenar por percentagem decrescente
                 for (int i = 0; i < aumentos.size() - 1; i++) {
                     for (int j = i + 1; j < aumentos.size(); j++) {
                         if (aumentos.get(j)[0] > aumentos.get(i)[0]) {
@@ -736,7 +735,7 @@ public class Main {
                     if (cidade.populacao >= minPopDup && contagemNomes.getOrDefault(cidade.cidade, 0) > 1) {
                         if (originaisVistos.contains(cidade.cidade)) {
                             String nomePaisDup = mapaAlfa2Nome.getOrDefault(cidade.alfa2.toUpperCase(), cidade.alfa2);
-                            sbDup.append(cidade.cidade).append(" ").append(nomePaisDup).append(" ").append(cidade.regiao).append("\n");
+                            sbDup.append(cidade.cidade).append(" (").append(nomePaisDup).append(",").append(cidade.regiao).append(")\n");
                         } else {
                             originaisVistos.add(cidade.cidade);
                         }
