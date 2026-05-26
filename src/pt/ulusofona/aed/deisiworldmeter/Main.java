@@ -359,11 +359,10 @@ public class Main {
                 return new Result(true, null, sb.toString());
 
             case "SUM_POPULATIONS":
-                String[] paises2 = parts[1].split(",");
+                String[] paisesLista = parts[1].split(",");
                 long totalPop = 0;
 
-                for (String nomePais2 : paises2) {
-                    // encontrar o país!
+                for (String nomePais2 : paisesLista) {
                     Pais paisTotal = null;
                     for (Pais pais : paises) {
                         if (pais.nome.equalsIgnoreCase(nomePais2)) {
@@ -373,10 +372,9 @@ public class Main {
                     }
 
                     if (paisTotal == null) {
-                        continue; // ignora países inválidos
+                        return new Result(false, "Pais invalido: " + nomePais2, null);
                     }
 
-                    // encontrar população de 2024
                     for (Populacao pop : populacoes) {
                         if (pop.id == paisTotal.id && pop.ano == 2024) {
                             totalPop += pop.populacaoMasculina + pop.populacaoFeminina;
@@ -385,7 +383,74 @@ public class Main {
                     }
                 }
 
-                return new Result(true, null, String.valueOf(totalPop));
+                return new Result(true, null, String.valueOf(totalPop) + "\n");
+
+
+            case "GET_HISTORY":
+                int anoInicio = Integer.parseInt(parts[1]);
+                int anoFim = Integer.parseInt(parts[2]);
+                String nomePaisHistory = parts[3];
+
+                // encontrar o país
+                Pais paisHistory = null;
+                for (Pais pais : paises) {
+                    if (pais.nome.equalsIgnoreCase(nomePaisHistory)) {
+                        paisHistory = pais;
+                        break;
+                    }
+                }
+
+                if (paisHistory == null) {
+                    return new Result(false, "Pais invalido: " + nomePaisHistory, null);
+                }
+
+                StringBuilder sbHistory = new StringBuilder();
+                for (Populacao pop : populacoes) {
+                    if (pop.id == paisHistory.id && pop.ano >= anoInicio && pop.ano <= anoFim) {
+                        long popMasc = pop.populacaoMasculina;
+                        long popFem = pop.populacaoFeminina;
+                        sbHistory.append(pop.ano).append(":").append(popMasc / 1000)
+                                .append("k:").append(popFem / 1000).append("k\n");
+                    }
+                }
+
+                if (sbHistory.length() == 0) {
+                    return new Result(true, null, "Sem resultados\n");
+                }
+
+                return new Result(true, null, sbHistory.toString());
+
+            case "GET_MISSING_HISTORY":
+                int anoInicioMissing = Integer.parseInt(parts[1]);
+                int anoFimMissing = Integer.parseInt(parts[2]);
+
+                StringBuilder sbMissing = new StringBuilder();
+
+                for (Pais pais : paises) {
+                    boolean faltaAlgum = false;
+                    for (int ano = anoInicioMissing; ano <= anoFimMissing; ano++) {
+                        boolean temAno = false;
+                        for (Populacao pop : populacoes) {
+                            if (pop.id == pais.id && pop.ano == ano) {
+                                temAno = true;
+                                break;
+                            }
+                        }
+                        if (!temAno) {
+                            faltaAlgum = true;
+                            break;
+                        }
+                    }
+                    if (faltaAlgum) {
+                        sbMissing.append(pais.alfa2).append(" ").append(pais.nome).append("\n");
+                    }
+                }
+
+                if (sbMissing.length() == 0) {
+                    return new Result(true, null, "Sem resultados\n");
+                }
+
+                return new Result(true, null, sbMissing.toString());
 
             default:
                 return new Result(false, "Comando invalido", null);
