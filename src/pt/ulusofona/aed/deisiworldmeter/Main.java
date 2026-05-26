@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 
 public class Main {
@@ -339,7 +341,7 @@ public class Main {
     public static Result execute(String command) {
         String[] parts = command.split(" ");
         switch (parts[0]) {
-        // FAZER COMANDOS
+
             case "HELP":
                 return new Result(true, null, comandoHelp());
 
@@ -355,26 +357,22 @@ public class Main {
 
             case "GET_CITIES_BY_COUNTRY":
                 int numResults = Integer.parseInt(parts[1]);
-                String nomePais = parts[2];
+                String nomePaisGCBC = command.substring(parts[0].length() + parts[1].length() + 2);
 
-                // verificar se o país existe
-                Pais paisEncontrado = null;
+                HashMap<String, Pais> mapaNomePais = new HashMap<>();
                 for (Pais pais : paises) {
-                    if (pais.nome.equalsIgnoreCase(nomePais)) {
-                        paisEncontrado = pais;
-                        break;
-                    }
+                    mapaNomePais.put(pais.nome.toLowerCase(), pais);
                 }
 
-                if (paisEncontrado == null) {
-                    return new Result(false, "Pais invalido: " + nomePais, null);
+                Pais paisGCBC = mapaNomePais.get(nomePaisGCBC.toLowerCase());
+                if (paisGCBC == null) {
+                    return new Result(false, "Pais invalido: " + nomePaisGCBC, null);
                 }
 
-                // obter cidades do país pela ordem do ficheiro
                 StringBuilder sb = new StringBuilder();
                 int contador = 0;
                 for (Cidade cidade : cidades) {
-                    if (cidade.alfa2.equalsIgnoreCase(paisEncontrado.alfa2)) {
+                    if (cidade.alfa2.equalsIgnoreCase(paisGCBC.alfa2)) {
                         sb.append(cidade.cidade).append("\n");
                         contador++;
                         if (contador == numResults) {
@@ -382,88 +380,91 @@ public class Main {
                         }
                     }
                 }
-
                 return new Result(true, null, sb.toString());
 
             case "SUM_POPULATIONS":
                 String[] paisesLista = parts[1].split(",");
                 long totalPop = 0;
 
-                for (String nomePais2 : paisesLista) {
-                    Pais paisTotal = null;
-                    for (Pais pais : paises) {
-                        if (pais.nome.equalsIgnoreCase(nomePais2)) {
-                            paisTotal = pais;
-                            break;
-                        }
-                    }
+                // HashMap nome -> Pais
+                HashMap<String, Pais> mapaSumPop = new HashMap<>();
+                for (Pais pais : paises) {
+                    mapaSumPop.put(pais.nome.toLowerCase(), pais);
+                }
 
-                    if (paisTotal == null) {
-                        continue; // ignora países inválidos
-                    }
-
-                    for (Populacao pop : populacoes) {
-                        if (pop.id == paisTotal.id && pop.ano == 2024) {
-                            totalPop += pop.populacaoMasculina + pop.populacaoFeminina;
-                            break;
-                        }
+                // HashMap idPais -> populacao 2024
+                HashMap<Integer, Populacao> mapaPop2024 = new HashMap<>();
+                for (Populacao pop : populacoes) {
+                    if (pop.ano == 2024) {
+                        mapaPop2024.put(pop.id, pop);
                     }
                 }
 
+                for (String nomePais2 : paisesLista) {
+                    Pais paisTotal = mapaSumPop.get(nomePais2.toLowerCase());
+                    if (paisTotal == null) {
+                        continue;
+                    }
+                    Populacao pop2024 = mapaPop2024.get(paisTotal.id);
+                    if (pop2024 != null) {
+                        totalPop += pop2024.populacaoMasculina + pop2024.populacaoFeminina;
+                    }
+                }
                 return new Result(true, null, String.valueOf(totalPop));
-
 
             case "GET_HISTORY":
                 int anoInicio = Integer.parseInt(parts[1]);
                 int anoFim = Integer.parseInt(parts[2]);
-                String nomePaisHistory = parts[3];
+                String nomePaisHistory = command.substring(parts[0].length() + parts[1].length() + parts[2].length() + 3);
 
-                // encontrar o país
-                Pais paisHistory = null;
+                HashMap<String, Pais> mapaHistory = new HashMap<>();
                 for (Pais pais : paises) {
-                    if (pais.nome.equalsIgnoreCase(nomePaisHistory)) {
-                        paisHistory = pais;
-                        break;
-                    }
+                    mapaHistory.put(pais.nome.toLowerCase(), pais);
                 }
 
+                Pais paisHistory = mapaHistory.get(nomePaisHistory.toLowerCase());
                 if (paisHistory == null) {
                     return new Result(false, "Pais invalido: " + nomePaisHistory, null);
                 }
 
-                StringBuilder sbHistory = new StringBuilder();
+                HashMap<Integer, Populacao> mapaAnosPop = new HashMap<>();
                 for (Populacao pop : populacoes) {
-                    if (pop.id == paisHistory.id && pop.ano >= anoInicio && pop.ano <= anoFim) {
-                        long popMasc = pop.populacaoMasculina;
-                        long popFem = pop.populacaoFeminina;
-                        sbHistory.append(pop.ano).append(":").append(popMasc / 1000)
-                                .append("k:").append(popFem / 1000).append("k\n");
+                    if (pop.id == paisHistory.id) {
+                        mapaAnosPop.put(pop.ano, pop);
+                    }
+                }
+
+                StringBuilder sbHistory = new StringBuilder();
+                for (int ano = anoInicio; ano <= anoFim; ano++) {
+                    Populacao pop = mapaAnosPop.get(ano);
+                    if (pop != null) {
+                        sbHistory.append(pop.ano).append(":")
+                                .append(pop.populacaoMasculina / 1000).append("k:")
+                                .append(pop.populacaoFeminina / 1000).append("k\n");
                     }
                 }
 
                 if (sbHistory.length() == 0) {
                     return new Result(true, null, "Sem resultados\n");
                 }
-
                 return new Result(true, null, sbHistory.toString());
 
             case "GET_MISSING_HISTORY":
                 int anoInicioMissing = Integer.parseInt(parts[1]);
                 int anoFimMissing = Integer.parseInt(parts[2]);
 
-                StringBuilder sbMissing = new StringBuilder();
+                // HashMap idPais -> Set de anos que tem
+                HashMap<Integer, HashSet<Integer>> mapaAnosExistentes = new HashMap<>();
+                for (Populacao pop : populacoes) {
+                    mapaAnosExistentes.computeIfAbsent(pop.id, k -> new HashSet<>()).add(pop.ano);
+                }
 
+                StringBuilder sbMissing = new StringBuilder();
                 for (Pais pais : paises) {
+                    HashSet<Integer> anosDoP = mapaAnosExistentes.get(pais.id);
                     boolean faltaAlgum = false;
                     for (int ano = anoInicioMissing; ano <= anoFimMissing; ano++) {
-                        boolean temAno = false;
-                        for (Populacao pop : populacoes) {
-                            if (pop.id == pais.id && pop.ano == ano) {
-                                temAno = true;
-                                break;
-                            }
-                        }
-                        if (!temAno) {
+                        if (anosDoP == null || !anosDoP.contains(ano)) {
                             faltaAlgum = true;
                             break;
                         }
@@ -476,73 +477,281 @@ public class Main {
                 if (sbMissing.length() == 0) {
                     return new Result(true, null, "Sem resultados\n");
                 }
-
                 return new Result(true, null, sbMissing.toString());
+
             case "INSERT_CITY":
                 String alfa2Insert = parts[1];
                 String nomeInsert = parts[2];
                 String regiaoInsert = parts[3];
                 double popInsert = Double.parseDouble(parts[4]);
 
-                // verificar se o país existe
-                Pais paisInsert = null;
+                // HashMap alfa2 -> Pais
+                HashMap<String, Pais> mapaInsert = new HashMap<>();
                 for (Pais pais : paises) {
-                    if (pais.alfa2.equalsIgnoreCase(alfa2Insert)) {
-                        paisInsert = pais;
-                        break;
-                    }
+                    mapaInsert.put(pais.alfa2.toUpperCase(), pais);
                 }
 
-                if (paisInsert == null) {
+                if (mapaInsert.get(alfa2Insert.toUpperCase()) == null) {
                     return new Result(false, "Pais invalido", null);
                 }
 
-                Cidade novaCidade = new Cidade(alfa2Insert, nomeInsert, regiaoInsert, popInsert, 0.0, 0.0);
-                cidades.add(novaCidade);
+                cidades.add(new Cidade(alfa2Insert, nomeInsert, regiaoInsert, popInsert, 0.0, 0.0));
                 return new Result(true, null, "Inserido com sucesso");
+
             case "REMOVE_COUNTRY":
                 String nomeRemover = parts[1];
 
-                Pais paisRemover = null;
+                // HashMap nome -> Pais
+                HashMap<String, Pais> mapaRemover = new HashMap<>();
                 for (Pais pais : paises) {
-                    if (pais.nome.equalsIgnoreCase(nomeRemover)) {
-                        paisRemover = pais;
-                        break;
-                    }
+                    mapaRemover.put(pais.nome.toLowerCase(), pais);
                 }
 
+                Pais paisRemover = mapaRemover.get(nomeRemover.toLowerCase());
                 if (paisRemover == null) {
                     return new Result(false, "Pais invalido", null);
                 }
 
-                // remover o país
                 paises.remove(paisRemover);
 
-                // remover as cidades do país
-                ArrayList<Cidade> cidadesRemover = new ArrayList<>();
-                for (Cidade cidade : cidades) {
-                    if (cidade.alfa2.equalsIgnoreCase(paisRemover.alfa2)) {
-                        cidadesRemover.add(cidade);
-                    }
-                }
-                cidades.removeAll(cidadesRemover);
-
-                // remover as populações do país
-                ArrayList<Populacao> popRemover = new ArrayList<>();
-                for (Populacao pop : populacoes) {
-                    if (pop.id == paisRemover.id) {
-                        popRemover.add(pop);
-                    }
-                }
-                populacoes.removeAll(popRemover);
+                cidades.removeIf(cidade -> cidade.alfa2.equalsIgnoreCase(paisRemover.alfa2));
+                populacoes.removeIf(pop -> pop.id == paisRemover.id);
 
                 return new Result(true, null, "Removido com sucesso");
+
+            case "GET_MOST_POPULOUS":
+                int numResultsMP = Integer.parseInt(parts[1]);
+
+                // HashMap alfa2 -> cidade mais populosa
+                HashMap<String, Cidade> mapaMaisPopulosa = new HashMap<>();
+                for (Cidade cidade : cidades) {
+                    Cidade atual = mapaMaisPopulosa.get(cidade.alfa2.toUpperCase());
+                    if (atual == null || cidade.populacao > atual.populacao) {
+                        mapaMaisPopulosa.put(cidade.alfa2.toUpperCase(), cidade);
+                    }
+                }
+
+                // HashMap alfa2 -> Pais
+                HashMap<String, Pais> mapaAlfa2Pais = new HashMap<>();
+                for (Pais pais : paises) {
+                    mapaAlfa2Pais.put(pais.alfa2.toUpperCase(), pais);
+                }
+
+                ArrayList<Cidade> maisPopulosas = new ArrayList<>(mapaMaisPopulosa.values());
+
+                // ordenar por população decrescente
+                for (int i = 0; i < maisPopulosas.size() - 1; i++) {
+                    for (int j = i + 1; j < maisPopulosas.size(); j++) {
+                        if (maisPopulosas.get(j).populacao > maisPopulosas.get(i).populacao) {
+                            Cidade temp = maisPopulosas.get(i);
+                            maisPopulosas.set(i, maisPopulosas.get(j));
+                            maisPopulosas.set(j, temp);
+                        }
+                    }
+                }
+
+                int limiteMP = numResultsMP == -1 ? maisPopulosas.size() : Math.min(numResultsMP, maisPopulosas.size());
+                StringBuilder sbMP = new StringBuilder();
+                for (int i = 0; i < limiteMP; i++) {
+                    Cidade c = maisPopulosas.get(i);
+                    Pais paisC = mapaAlfa2Pais.get(c.alfa2.toUpperCase());
+                    String nomePaisC = paisC != null ? paisC.nome : c.alfa2;
+                    sbMP.append(nomePaisC).append(":").append(c.cidade).append(":").append((long) c.populacao).append("\n");
+                }
+                return new Result(true, null, sbMP.toString());
+
+            case "GET_TOP_CITIES_BY_COUNTRY":
+                int numResultsTop = Integer.parseInt(parts[1]);
+                String nomePaisTop = command.substring(parts[0].length() + parts[1].length() + 2);
+
+                HashMap<String, Pais> mapaTop = new HashMap<>();
+                for (Pais pais : paises) {
+                    mapaTop.put(pais.nome.toLowerCase(), pais);
+                }
+
+                Pais paisTop = mapaTop.get(nomePaisTop.toLowerCase());
+                if (paisTop == null) {
+                    return new Result(false, "Pais invalido: " + nomePaisTop, null);
+                }
+
+                ArrayList<Cidade> cidadesPais = new ArrayList<>();
+                for (Cidade cidade : cidades) {
+                    if (cidade.alfa2.equalsIgnoreCase(paisTop.alfa2)) {
+                        cidadesPais.add(cidade);
+                    }
+                }
+
+                for (int i = 0; i < cidadesPais.size() - 1; i++) {
+                    for (int j = i + 1; j < cidadesPais.size(); j++) {
+                        Cidade ci = cidadesPais.get(i);
+                        Cidade cj = cidadesPais.get(j);
+                        long popI = (long) (ci.populacao / 1000);
+                        long popJ = (long) (cj.populacao / 1000);
+                        boolean trocar = false;
+                        if (popJ > popI) {
+                            trocar = true;
+                        } else if (popJ == popI && cj.cidade.compareTo(ci.cidade) < 0) {
+                            trocar = true;
+                        }
+                        if (trocar) {
+                            cidadesPais.set(i, cj);
+                            cidadesPais.set(j, ci);
+                        }
+                    }
+                }
+
+                int limiteTop = numResultsTop == -1 ? cidadesPais.size() : Math.min(numResultsTop, cidadesPais.size());
+                StringBuilder sbTop = new StringBuilder();
+                for (int i = 0; i < limiteTop; i++) {
+                    Cidade c = cidadesPais.get(i);
+                    long popK = (long) (c.populacao / 1000);
+                    sbTop.append(c.cidade).append(":").append(popK).append("K\n");
+                }
+                return new Result(true, null, sbTop.toString());
+
+            case "GET_COUNTRIES_GENDER_GAP":
+                int minGap = Integer.parseInt(parts[1]);
+
+                // HashMap idPais -> pop2024
+                HashMap<Integer, Populacao> mapaGap = new HashMap<>();
+                for (Populacao pop : populacoes) {
+                    if (pop.ano == 2024) {
+                        mapaGap.put(pop.id, pop);
+                    }
+                }
+
+                StringBuilder sbGap = new StringBuilder();
+                for (Pais pais : paises) {
+                    Populacao pop2024 = mapaGap.get(pais.id);
+                    if (pop2024 == null) {
+                        continue;
+                    }
+                    double masc = pop2024.populacaoMasculina;
+                    double fem = pop2024.populacaoFeminina;
+                    double gap = Math.abs(masc - fem) / (masc + fem) * 100;
+                    if (gap >= minGap) {
+                        double gapTruncado = Math.floor(gap * 100) / 100;
+                        sbGap.append(pais.nome).append(":")
+                                .append(String.format(java.util.Locale.US, "%.2f", gapTruncado)).append("\n");
+                    }
+                }
+
+                if (sbGap.length() == 0) {
+                    return new Result(true, null, "Sem resultados");
+                }
+                return new Result(true, null, sbGap.toString());
+
+            case "GET_TOP_POPULATION_INCREASE":
+                int anoInicioIncrease = Integer.parseInt(parts[1]);
+                int anoFimIncrease = Integer.parseInt(parts[2]);
+
+                // HashMap idPais -> TreeMap ano -> Populacao (ordenado por ano)
+                HashMap<Integer, TreeMap<Integer, Populacao>> mapaPopsIncrease = new HashMap<>();
+                for (Populacao pop : populacoes) {
+                    if (pop.ano >= anoInicioIncrease && pop.ano <= anoFimIncrease) {
+                        mapaPopsIncrease.computeIfAbsent(pop.id, k -> new TreeMap<>()).put(pop.ano, pop);
+                    }
+                }
+
+                HashMap<Integer, Pais> mapaIdPais = new HashMap<>();
+                for (Pais pais : paises) {
+                    mapaIdPais.put(pais.id, pais);
+                }
+
+                ArrayList<double[]> aumentos = new ArrayList<>();
+                ArrayList<String> nomesAumentos = new ArrayList<>();
+
+                for (int idPais : mapaPopsIncrease.keySet()) {
+                    TreeMap<Integer, Populacao> popsOrdenadas = mapaPopsIncrease.get(idPais);
+                    Pais paisIncrease = mapaIdPais.get(idPais);
+                    if (paisIncrease == null) {
+                        continue;
+                    }
+
+                    ArrayList<Populacao> lista = new ArrayList<>(popsOrdenadas.values());
+
+                    // só pares consecutivos!
+                    for (int i = 0; i < lista.size() - 1; i++) {
+                        Populacao popAnterior = lista.get(i);
+                        Populacao popAtual = lista.get(i + 1);
+                        double totalAnterior = popAnterior.populacaoMasculina + popAnterior.populacaoFeminina;
+                        double totalAtual = popAtual.populacaoMasculina + popAtual.populacaoFeminina;
+                        double aumento = totalAtual - totalAnterior;
+                        if (aumento > 0) {
+                            double percentagem = aumento / totalAtual * 100;
+                            double percentagemFinal = Math.round(percentagem * 100.0) / 100.0;
+                            aumentos.add(new double[]{percentagemFinal});
+                            nomesAumentos.add(paisIncrease.nome + ":" + popAnterior.ano + "-" + popAtual.ano);
+                        }
+                    }
+                }
+
+                // ordenar por percentagem decrescente
+                for (int i = 0; i < aumentos.size() - 1; i++) {
+                    for (int j = i + 1; j < aumentos.size(); j++) {
+                        if (aumentos.get(j)[0] > aumentos.get(i)[0]) {
+                            double[] tempD = aumentos.get(i);
+                            aumentos.set(i, aumentos.get(j));
+                            aumentos.set(j, tempD);
+                            String tempS = nomesAumentos.get(i);
+                            nomesAumentos.set(i, nomesAumentos.get(j));
+                            nomesAumentos.set(j, tempS);
+                        }
+                    }
+                }
+
+                StringBuilder sbIncrease = new StringBuilder();
+                int limiteIncrease = Math.min(5, aumentos.size());
+                for (int i = 0; i < limiteIncrease; i++) {
+                    sbIncrease.append(nomesAumentos.get(i)).append(":")
+                            .append(String.format(java.util.Locale.US, "%.2f", aumentos.get(i)[0]))
+                            .append("%\n");
+                }
+
+                if (sbIncrease.length() == 0) {
+                    return new Result(true, null, "Sem resultados");
+                }
+                return new Result(true, null, sbIncrease.toString());
+            case "GET_DUPLICATE_CITIES":
+                int minPopDup = Integer.parseInt(parts[1]);
+
+                // contar ocorrências de cada nome
+                HashMap<String, Integer> contagemNomes = new HashMap<>();
+                for (Cidade cidade : cidades) {
+                    if (cidade.populacao >= minPopDup) {
+                        contagemNomes.put(cidade.cidade, contagemNomes.getOrDefault(cidade.cidade, 0) + 1);
+                    }
+                }
+
+                // HashMap alfa2 -> nome do país
+                HashMap<String, String> mapaAlfa2Nome = new HashMap<>();
+                for (Pais pais : paises) {
+                    mapaAlfa2Nome.put(pais.alfa2.toUpperCase(), pais.nome);
+                }
+
+                HashSet<String> originaisVistos = new HashSet<>();
+                StringBuilder sbDup = new StringBuilder();
+
+                for (Cidade cidade : cidades) {
+                    if (cidade.populacao >= minPopDup && contagemNomes.getOrDefault(cidade.cidade, 0) > 1) {
+                        if (originaisVistos.contains(cidade.cidade)) {
+                            String nomePaisDup = mapaAlfa2Nome.getOrDefault(cidade.alfa2.toUpperCase(), cidade.alfa2);
+                            sbDup.append(cidade.cidade).append(" ").append(nomePaisDup).append(" ").append(cidade.regiao).append("\n");
+                        } else {
+                            originaisVistos.add(cidade.cidade);
+                        }
+                    }
+                }
+
+                if (sbDup.length() == 0) {
+                    return new Result(true, null, "Sem resultados\n");
+                }
+                return new Result(true, null, sbDup.toString());
 
             default:
                 return new Result(false, "Comando invalido", null);
         }
     }
-
 
     public static void main(String[] args) {
         System.out.println("Welcome to DEISI World Meter");
