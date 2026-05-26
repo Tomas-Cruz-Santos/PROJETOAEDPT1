@@ -711,7 +711,7 @@ public class Main {
             case "GET_DUPLICATE_CITIES":
                 int minPopDup = Integer.parseInt(parts[1]);
 
-                // contar ocorrências de cada nome
+                // contar ocorrências de cada no
                 HashMap<String, Integer> contagemNomes = new HashMap<>();
                 for (Cidade cidade : cidades) {
                     if (cidade.populacao >= minPopDup) {
