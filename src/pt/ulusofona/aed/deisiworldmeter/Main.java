@@ -399,15 +399,18 @@ public class Main {
                     }
                 }
 
+                StringBuilder erros = new StringBuilder();
+
                 for (String nomePais2 : paisesLista) {
+
                     Pais paisTotal = mapaSumPop.get(nomePais2.toLowerCase().trim());
 
-                    // País inválido deve ser ignorado, não deve dar success=false
                     if (paisTotal == null) {
                         return new Result(false, "Pais invalido: " + nomePais2.trim(), null);
                     }
 
                     Populacao pop2024 = mapaPop2024.get(paisTotal.id);
+
                     if (pop2024 != null) {
                         totalPop += pop2024.populacaoMasculina + pop2024.populacaoFeminina;
                     }
@@ -571,11 +574,11 @@ public class Main {
 
             case "GET_TOP_CITIES_BY_COUNTRY":
                 int numResultsTop = Integer.parseInt(parts[1]);
-                String nomePaisTop = parts[2];
+                String nomePaisTop = command.substring(parts[0].length() + parts[1].length() + 2);
 
                 ArrayList<Cidade> cidadesDoPais = new ArrayList<>();
                 for (Pais pais : paises) {
-                    if (pais.nome.equals(nomePaisTop)) {          // usa a variável local
+                    if (pais.nome.equalsIgnoreCase(nomePaisTop)) {          // usa a variável local
                         for (Cidade cidade : cidades) {
                             if (cidade.alfa2.equals(pais.alfa2) && cidade.populacao >= 10000) {
                                 cidadesDoPais.add(cidade);
