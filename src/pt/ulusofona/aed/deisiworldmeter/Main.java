@@ -402,9 +402,8 @@ public class Main {
                 for (String nomePais2 : paisesLista) {
                     Pais paisTotal = mapaSumPop.get(nomePais2.toLowerCase().trim());
 
-                    // País inválido deve ser ignorado, não deve dar success=false
                     if (paisTotal == null) {
-                        return new Result(false, "Pais invalido: " + nomePais2.trim(), null);
+                        return new Result(true, null, "Pais invalido: " + nomePais2.trim());
                     }
 
                     Populacao pop2024 = mapaPop2024.get(paisTotal.id);
@@ -492,14 +491,13 @@ public class Main {
                         command.length() - parts[parts.length - 1].length() - parts[parts.length - 2].length() - 2
                 );
 
-                // verificar se o país existe  ← ESTA PARTE ESTAVA A FALTAR!
                 HashMap<String, Pais> mapaInsert = new HashMap<>();
                 for (Pais pais : paises) {
                     mapaInsert.put(pais.alfa2.toUpperCase(), pais);
                 }
 
                 if (mapaInsert.get(alfa2Insert.toUpperCase()) == null) {
-                    return new Result(false, "Pais invalido", null);
+                    return new Result(true, null, "Pais invalido");
                 }
 
                 cidades.add(new Cidade(alfa2Insert, nomeInsert, regiaoInsert, popInsert, 0.0, 0.0));
