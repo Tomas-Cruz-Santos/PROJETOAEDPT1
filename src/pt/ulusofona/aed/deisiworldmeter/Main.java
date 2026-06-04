@@ -448,7 +448,7 @@ public class Main {
                 String nomeInsert = command.substring(
                         parts[0].length() + parts[1].length() + 2,
                         command.length() - parts[parts.length - 1].length() - parts[parts.length - 2].length() - 2
-                );
+                ).trim();
                 HashMap<String, Pais> mapaInsert = new HashMap<>();
                 for (Pais pais : paises) {
                     mapaInsert.put(pais.alfa2.toUpperCase(), pais);
@@ -517,7 +517,7 @@ public class Main {
                 for (Pais pais : paises) {
                     if (pais.nome.equalsIgnoreCase(nomePaisTop)) {
                         for (Cidade cidade : cidades) {
-                            if (cidade.alfa2.equals(pais.alfa2)) {
+                            if (cidade.alfa2.equals(pais.alfa2) && cidade.populacao >= 10000) {
                                 cidadesDoPais.add(cidade);
                             }
                         }
@@ -806,9 +806,18 @@ public class Main {
                         cidadesOutros.add(cidade);
                     }
                 }
+
+                double margem = distTarget2 / 111.0 + 1.0;  // dist calc
+
                 ArrayList<String> pares2 = new ArrayList<>();
                 for (Cidade c1 : cidadesDoPais2) {
                     for (Cidade c2 : cidadesOutros) {
+                        if (Math.abs(c1.latitude - c2.latitude) > margem) {
+                            continue;
+                        }
+                        if (Math.abs(c1.longitude - c2.longitude) > margem * 2) {
+                            continue;
+                        }
                         double dist = haversine(c1.latitude, c1.longitude, c2.latitude, c2.longitude);
                         if (Math.abs(dist - distTarget2) < 1.0) {
                             String menor = c1.cidade.compareTo(c2.cidade) <= 0 ? c1.cidade : c2.cidade;
@@ -828,6 +837,7 @@ public class Main {
                 }
                 return new Result(true, null, sbDist2.toString());
             }
+
             case "GET_CITIES_ABOVE_AVERAGE_POPULATION": {
                 int minCidades = Integer.parseInt(parts[1]);
 
