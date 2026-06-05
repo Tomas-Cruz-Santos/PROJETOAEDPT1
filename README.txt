@@ -116,3 +116,5 @@ em ArrayList por HashMap para localizar países por nome, alfa2 e id, reduzindo 
 complexidade de O(n) para O(1). Usámos TreeMap no comando GET_TOP_POPULATION_INCREASE
 para armazenar os dados de população ordenados por ano, o que simplificou a lógica
 de comparação entre anos consecutivos.
+
+(Este foi um dos exemplos)
